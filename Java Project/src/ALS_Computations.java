@@ -137,55 +137,29 @@ public class ALS_Computations {
 
 //                find_tremors code is being revised, so for now it is commented out
     
-/*    public static int find_tremors(){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
-        ArrayList<Integer> n = new ArrayList<>();   //intervals to test (every n[0]th, every n[1]th, every n[2]th, etc...)
-        n.add(6);   
-        n.add(7);  
-        n.add(7); 
-        n.add(8); 
-        n.add(9);  
-        n.add(10);
-        n.add(11); 
-        n.add(13);  
-        n.add(15);
+    public static int find_tremors(){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
+       ArrayList<Double> velocity = new ArrayList<>();
+        for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
+            ArrayList<Double> temp_velocity = new ArrayList<>();
+            temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
+            temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
+            velocity.add(d2_distance_formula(temp_velocity));
+        }
+            
+        ArrayList<Double> acceleration = new ArrayList<>();
+        for (int i = 0; i < velocity.size() - 1; i++){ //calculate acceleraion (difference between velocity data points) and add to acceleration
+            acceleration.add(Math.abs(velocity.get(i+1) - velocity.get(i)));
+        }
         
-        ArrayList<Integer> all_tremors = new ArrayList<>(); //keeps track of all positions for tremors (
-        for item in n:
-            all_tremors = all_tremors + find_tremors_with_interval(item);
-        all_tremors.sort(); //sort list
-
-        if(len(all_tremors) == 0): return 0; //no tremors found
-        if(len(all_tremors) == 1): return 1; //only 1 tremor found, and it occurs over only 1 interval
-
-        int num_tremors = 1; //we know there must be at least 1 tremor (see above)
-        for i in range(1, len(all_tremors)):
-            if(all_tremors[i] - all_tremors[i-1] != 1 & all_tremors[i] - all_tremors[i-1] != 0): //if there is a break in continuity (differs by more than 1 between 2 elements, not the same element),
-                num_tremors = num_tremors + 1;          //then there is in fact a new distinct tremor (increase num_tremors)
-
-        return num_tremors;
+        int tremorCount = 0;
+        for (int counter = 0; counter < acceleration.size() - 5; counter++)
+        {
+            if (acceleration.get(counter) > LENIENCY && acceleration.get(counter + 1) < -LENIENCY 
+                    && acceleration.get(counter + 2) > LENIENCY)
+                tremorCount++;
+        }
+        return tremorCount;
     }
-
-    public static ArrayList<int> find_tremors_with_interval(int n){
-        isolated_data = []; //isolated data always contains first
-        for i in range(0, floor(len(data) / n) + 1): //isolate every nth data point in the data list (converts using distance formula first)
-            temp_formatted_data = [Decimal(data[i*(n-1)][0]), Decimal(data[i*(n-1)][1])]; //format data as decimal
-            isolated_data.append(Decimal(d2_distance_formula(temp_formatted_data)));
-
-        ArrayList<int> tremor_locations = new ArrayList<int>();
-        for i in range(0, len(isolated_data) - 1):
-            if(abs(isolated_data[i] - isolated_data[i+1]) <= LENIENCY): //checks if values are equal at beginning and end of tremor intervals
-                is_false_positive = True;
-                for j in range(i*n, (i*n)+n):
-                    //format data as decimal temporarily (for comparison to isolated_data)
-                    temp_data = Decimal(d2_distance_formula([Decimal(data[j][0]), Decimal(data[j][1])]));
-                    if(abs(isolated_data[i] - temp_data) >= LENIENCY): is_false_positive = False; //if any number in the tremor interval differs from the endpoint by more than LENIENCY
-                                                                                                  //then it is not a false positive (looks at amplitude): otherwise, disregard (not real tremor)
-                if(is_false_positive == False): //if it is not a false positive, add it to the list
-                    for x in range((i*n), (i+1)*n): //add all data points between start and end (the entire tremor)
-                        tremor_locations.append(x);
-
-        return tremor_locations;
-    }*/
 
     public static int write_to_file(String file_name, Double x_range, Double y_range, Double x_mode, 
                                     Double y_mode, Double muscle_smoothness/*, int num_tremors*/){ //write to file (returns 0 if success, -1 otherwise)

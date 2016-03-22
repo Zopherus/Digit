@@ -1,3 +1,14 @@
+
+import java.awt.BorderLayout;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -8,14 +19,56 @@
  *
  * @author Eric
  */
+
+
 public class DigitForm extends javax.swing.JFrame {
 
     /**
      * Creates new form DigitForm
      */
     public DigitForm() {
-        initComponents();
+        //initComponents();
+        Initialize();
     }
+    
+    private void Initialize()
+    {
+        JPanel chartPanel = createChartPanel();
+        add(chartPanel, BorderLayout.CENTER);
+        
+        setSize(640, 480);
+        setLocationRelativeTo(null);
+        
+    }
+    
+    private JPanel createChartPanel()
+    {
+        String chartTitle = "Muscle Smoothness";
+        String xAxisLabel = "Time";
+        String yAxisLabel = "Smoothness";
+        
+        XYDataset dataset = createDataset();
+        
+        JFreeChart chart = ChartFactory.createXYLineChart(chartTitle, xAxisLabel,
+                yAxisLabel, dataset);
+        
+        return new ChartPanel(chart);
+    }
+    
+    private XYDataset createDataset()
+    {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries series = new XYSeries("Data");
+          
+        series.add(1.0,2.0);
+        series.add(2.0,3.0);
+        series.add(3.0,4.0);
+          
+        dataset.addSeries(series);
+        
+        return dataset;
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.

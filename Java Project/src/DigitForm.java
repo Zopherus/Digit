@@ -42,6 +42,8 @@ import java.util.logging.Logger;
  */
 
 
+
+// TODO: MAKE RESIZABLE FALSE FOR FORM
 public class DigitForm extends javax.swing.JFrame {
 
     //class variables
@@ -95,8 +97,10 @@ public class DigitForm extends javax.swing.JFrame {
             series.add(i, data.get(i));
         }
         dataset.addSeries(series);
-        JFreeChart chart = ChartFactory.createXYLineChart(title, x_label, y_label, dataset);
-        add(new ChartPanel(chart), BorderLayout.CENTER);
+        ChartPanel chartPanel = new ChartPanel(ChartFactory.createXYLineChart(title, x_label, y_label, dataset));
+        chartPanel.setMaximumSize(new java.awt.Dimension(500,250));
+        //add(chartPanel, BorderLayout.CENTER);
+        setContentPane(chartPanel);
     }
     
     
@@ -106,7 +110,7 @@ public class DigitForm extends javax.swing.JFrame {
         ArrayList<ArrayList<Double>> data = new ArrayList<>();
         int tempTEST = 0;
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        while(true || tempTEST < 100)
+        while(true && tempTEST < 100)
         {
             String line = reader.readLine();
             if(line==null)
@@ -285,6 +289,8 @@ public class DigitForm extends javax.swing.JFrame {
         tremorsButton = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(900, 500));
+        setPreferredSize(new java.awt.Dimension(900, 500));
 
         day_selector.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
 
@@ -304,7 +310,6 @@ public class DigitForm extends javax.swing.JFrame {
         xRangeButton.setText("X Range");
 
         yRangeButton.setText("Y Range");
-        yRangeButton.setActionCommand("Y Range");
 
         xModeButton.setText("X Mode");
 
@@ -344,18 +349,21 @@ public class DigitForm extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(11, 11, 11)
+                        .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(refresh, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
-                            .addComponent(xRangeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(yRangeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(xModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(yModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(tremorsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(smoothnessButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(xRangeButton)
+                                    .addComponent(yRangeButton)
+                                    .addComponent(xModeButton)
+                                    .addComponent(yModeButton)
+                                    .addComponent(tremorsButton)
+                                    .addComponent(smoothnessButton)))))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(410, Short.MAX_VALUE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );

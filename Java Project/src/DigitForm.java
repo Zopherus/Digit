@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -48,10 +49,11 @@ public class DigitForm extends javax.swing.JFrame {
 
     //class variables
     private String fileOutput = "ALS_Computations_Output.txt";
-    private String fileInput = "ALS_Test_File_Large.txt";
+    private String fileInputDirectory = "dataFiles";
+    private String fileMetricDirectory = "dataMetrics";
     private Double LENIENCY = 0.5;
-    //hourlyData is 24 lists of pairs of data points (1 list per hour)
-    //hourlyData should hve a size of 24-3600-2
+    private Integer MEASURESPERSECOND = 100; //number of data points recorded every second
+    //hourlyData is lists of pairs of data points (1 list per hour)
     private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList();
     
     /**
@@ -64,7 +66,7 @@ public class DigitForm extends javax.swing.JFrame {
     
     private void Initialize()
     {
-        setSize(640, 480);
+        setSize(900, 550);
         setLocationRelativeTo(null);
         
         graphDisplayButtons.add(xRangeButton);
@@ -74,20 +76,10 @@ public class DigitForm extends javax.swing.JFrame {
         graphDisplayButtons.add(smoothnessButton);
         graphDisplayButtons.add(tremorsButton);
         
-        for(int i = 0; i < 4; i++)
-        {
-            try 
-            {
-                hourlyData.add(importDataFromFile(fileInput));
-            } 
-            catch (IOException ex) {
-                //uh oh! IOException (figure out something to do here)
-            }
-        }
+        refreshFromDataDirectory();
     }
     
     //generate the graph based on data
-    //note: data variable should be 24 long (24 hours)
     private void generateGraph(String title, String x_label, String y_label, ArrayList<Double> data)
     {
         XYSeriesCollection dataset = new XYSeriesCollection();
@@ -99,35 +91,42 @@ public class DigitForm extends javax.swing.JFrame {
         dataset.addSeries(series);
         ChartPanel chartPanel = new ChartPanel(ChartFactory.createXYLineChart(title, x_label, y_label, dataset));
         chartPanel.setMaximumSize(new java.awt.Dimension(500,250));
-        //add(chartPanel, BorderLayout.CENTER);
-        setContentPane(chartPanel);
+        graphPanel.removeAll(); //clears the graph Panel
+        graphPanel.setSize((chartPanel.getSize())); //resize panel so the chart fits and is visible
+        graphPanel.add(chartPanel, BorderLayout.CENTER); //adds graph to empy graph Panel
+        graphPanel.validate();
+        this.setSize(this.getSize().width + 1, this.getSize().height + 1); //a good workaround... let's call it a dynamic solution
+        this.setSize(this.getSize().width - 1, this.getSize().height - 1);
     }
     
     
     //import data from a given file
-    private ArrayList<ArrayList<Double>> importDataFromFile(String filePath) throws IOException
+    private void importDataFromFile(String filePath) throws IOException
     {
-        ArrayList<ArrayList<Double>> data = new ArrayList<>();
-        int tempTEST = 0;
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        while(true && tempTEST < 100)
+        
+        String line = reader.readLine();
+        int numLinesRead = 0;
+        ArrayList<ArrayList<Double>> hourDataTemp = new ArrayList();
+        while(line != null) //iterate through each hour and add to daily list
         {
-            String line = reader.readLine();
-            if(line==null)
+            while(numLinesRead < 3600 * MEASURESPERSECOND)
             {
-                break;
+                String[] fields = line.split(" ");
+                ArrayList<Double> temp_point = new ArrayList<>();
+                temp_point.add(Double.parseDouble(fields[0]));
+                temp_point.add(Double.parseDouble(fields[1]));
+                hourDataTemp.add(temp_point);
+                numLinesRead++;
+                line = reader.readLine();
+                if(line == null) { break; }
             }
-            String[] fields = line.split(" ");
-            ArrayList<Double> temp_point = new ArrayList<>();
-            temp_point.add(Double.parseDouble(fields[0]));
-            temp_point.add(Double.parseDouble(fields[1]));
-            data.add(temp_point);
             
-            tempTEST++;
+            hourlyData.add(hourDataTemp);
+            hourDataTemp.clear();
+            numLinesRead = 0;
         }
         reader.close();
-        
-        return data;
     }
 
     public ArrayList<Double> find_range_of_motion(ArrayList<ArrayList<Double>> data){ //calculate the range for x and y (seperate)
@@ -138,7 +137,6 @@ public class DigitForm extends javax.swing.JFrame {
             data_x.add(point.get(0));
             data_y.add(point.get(1));
         }
-
         Double x_range = Collections.max(data_x) - Collections.min(data_x); //find the range (max - min)
         Double y_range = Collections.max(data_y) - Collections.min(data_y);
 
@@ -148,8 +146,7 @@ public class DigitForm extends javax.swing.JFrame {
         
         return range_list; //return range as simple coordinate
     }
-    
-    //no yet implemented in java (much of the code below is still python): unknown way
+   
     private ArrayList<Double> find_mode(ArrayList<ArrayList<Double>> data){ //calculate average mode of data
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
@@ -267,6 +264,91 @@ public class DigitForm extends javax.swing.JFrame {
         
         return average_mode / num_modes;
     }
+    
+    private void refreshFromDataDirectory()
+    {
+        day_selector.removeAll(); //reset list
+        File directory = new File(fileInputDirectory);
+        File[] files = directory.listFiles();
+        for(int i = 0; i < files.length; i++)
+        {
+            String fileName = files[i].getName().replace(".txt", ""); //read file name and remove .txt
+            String[] fileNameSplit = fileName.split("_"); 
+            fileName = fileNameSplit[1] + "/" + fileNameSplit[2] + "/" + fileNameSplit[0]; //reverse the order (should now be dd/mm/yy);
+            day_selector.add(fileName); //add each file name to list
+        }
+    }
+    
+    private void computeMetricsFromRadioButtons()
+    {
+        try 
+        {
+            String[] tempSplitString = day_selector.getSelectedItem().split("/"); //reformat file name correctly
+            String formattedFileString = tempSplitString[2] + "_" + tempSplitString[0] + "_"
+                                       + tempSplitString[1] + ".txt";
+            importDataFromFile(fileInputDirectory + "\\" + formattedFileString);
+            System.out.println(hourlyData.size());
+        }
+        catch (IOException ex)
+        {
+            //Uh-Oh! an error occurred... find a way to fix it, I guess
+            System.out.println(ex.getMessage());
+        }
+        if(xRangeButton.isSelected())
+        {
+            ArrayList<Double> xRange = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                xRange.add(find_range_of_motion(hourlyData.get(i)).get(0));
+            }
+            generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", xRange);
+        }
+        else if(yRangeButton.isSelected())
+        {
+            ArrayList<Double> yRange = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                yRange.add(find_range_of_motion(hourlyData.get(i)).get(1));
+            }
+            generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", yRange);
+        }
+        else if(xModeButton.isSelected())
+        {
+            ArrayList<Double> xMode = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                xMode.add(find_mode(hourlyData.get(i)).get(0));
+            }
+            generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", xMode);
+        }
+        else if(yModeButton.isSelected())
+        {
+            ArrayList<Double> yMode = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                yMode.add(find_mode(hourlyData.get(i)).get(1));
+            }
+            generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", yMode);
+        }
+        else if(smoothnessButton.isSelected())
+        {
+            ArrayList<Double> smoothness = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                smoothness.add(find_muscle_smoothness(hourlyData.get(i)));
+            }
+            generateGraph("Muscle Smoothness Data", "Time (Hours)", "Muscle Smoothness (Units)", smoothness);
+        }
+        else if(tremorsButton.isSelected())
+        {
+            ArrayList<Double> tremors = new ArrayList();
+            for(int i = 0; i < hourlyData.size(); i++)
+            {
+                tremors.add((double)find_tremors(hourlyData.get(i))); //casts int to Double
+            }
+            generateGraph("Tremors Data", "Time (Hours)", "Tremors (Units)", tremors);
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -287,6 +369,7 @@ public class DigitForm extends javax.swing.JFrame {
         yModeButton = new javax.swing.JRadioButton();
         smoothnessButton = new javax.swing.JRadioButton();
         tremorsButton = new javax.swing.JRadioButton();
+        graphPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(900, 500));
@@ -295,7 +378,7 @@ public class DigitForm extends javax.swing.JFrame {
         day_selector.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
 
         compute_metrics.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
-        compute_metrics.setLabel("Compute Metrics");
+        compute_metrics.setLabel("Recompute");
         compute_metrics.setName(""); // NOI18N
         compute_metrics.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -305,6 +388,11 @@ public class DigitForm extends javax.swing.JFrame {
 
         refresh.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
         refresh.setLabel("Refresh");
+        refresh.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                refreshMouseClicked(evt);
+            }
+        });
 
         xRangeButton.setSelected(true);
         xRangeButton.setText("X Range");
@@ -319,6 +407,8 @@ public class DigitForm extends javax.swing.JFrame {
 
         tremorsButton.setText("Tremors");
 
+        graphPanel.setLayout(new java.awt.BorderLayout());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -329,43 +419,48 @@ public class DigitForm extends javax.swing.JFrame {
                     .addComponent(refresh, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
                     .addComponent(day_selector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(xRangeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(yRangeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(xModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(yModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(smoothnessButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tremorsButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
-                .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(xRangeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(yRangeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(xModeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(yModeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(smoothnessButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(tremorsButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(xRangeButton)
-                                    .addComponent(yRangeButton)
-                                    .addComponent(xModeButton)
-                                    .addComponent(yModeButton)
-                                    .addComponent(tremorsButton)
-                                    .addComponent(smoothnessButton)))))
+                            .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addGap(22, 22, 22)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(xRangeButton)
+                            .addComponent(yRangeButton)
+                            .addComponent(xModeButton)
+                            .addComponent(yModeButton)
+                            .addComponent(tremorsButton)
+                            .addComponent(smoothnessButton))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         compute_metrics.getAccessibleContext().setAccessibleDescription("");
@@ -373,62 +468,15 @@ public class DigitForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //when compute metrics button is pressed, compute metrics based on radio button
     private void compute_metricsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compute_metricsMouseClicked
-        if(xRangeButton.isSelected())
-        {
-            ArrayList<Double> xRange = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                xRange.add(find_range_of_motion(hourlyData.get(i)).get(0));
-            }
-            generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", xRange);
-        }
-        else if(yRangeButton.isSelected())
-        {
-            ArrayList<Double> yRange = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                yRange.add(find_range_of_motion(hourlyData.get(i)).get(1));
-            }
-            generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", yRange);
-        }
-        else if(xModeButton.isSelected())
-        {
-            ArrayList<Double> xMode = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                xMode.add(find_mode(hourlyData.get(i)).get(0));
-            }
-            generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", xMode);
-        }
-        else if(yModeButton.isSelected())
-        {
-            ArrayList<Double> yMode = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                yMode.add(find_mode(hourlyData.get(i)).get(1));
-            }
-            generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", yMode);
-        }
-        else if(smoothnessButton.isSelected())
-        {
-            ArrayList<Double> smoothness = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                smoothness.add(find_muscle_smoothness(hourlyData.get(i)));
-            }
-            generateGraph("Muscle Smoothness Data", "Time (Hours)", "Muscle Smoothness (Units)", smoothness);
-        }
-        else if(tremorsButton.isSelected())
-        {
-            ArrayList<Double> tremors = new ArrayList();
-            for(int i = 0; i < hourlyData.size(); i++) //size should be 24
-            {
-                tremors.add((double)find_tremors(hourlyData.get(i))); //casts int to Double
-            }
-            generateGraph("Tremors Data", "Time (Hours)", "Tremors (Units)", tremors);
-        }
+        computeMetricsFromRadioButtons();
     }//GEN-LAST:event_compute_metricsMouseClicked
+
+    //when refresh button is clicked, take all file names from directory and put in list
+    private void refreshMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refreshMouseClicked
+        refreshFromDataDirectory();
+    }//GEN-LAST:event_refreshMouseClicked
 
     /**
      * @param args the command line arguments
@@ -469,6 +517,7 @@ public class DigitForm extends javax.swing.JFrame {
     private java.awt.Button compute_metrics;
     private java.awt.List day_selector;
     private javax.swing.ButtonGroup graphDisplayButtons;
+    private javax.swing.JPanel graphPanel;
     private java.awt.Button refresh;
     private javax.swing.JRadioButton smoothnessButton;
     private javax.swing.JRadioButton tremorsButton;

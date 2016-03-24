@@ -7,29 +7,27 @@
     -TODO: figure out IO exception handling (and exception handling in general)*/
 
 import java.awt.BorderLayout;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
-import java.util.ArrayList;
-import java.util.Collections;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.File;
-import java.io.IOException;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -49,12 +47,12 @@ public class DigitForm extends javax.swing.JFrame {
 
     //class variables
     private String fileOutput = "ALS_Computations_Output.txt";
-    private String fileInputDirectory = "dataFiles";
-    private String fileMetricDirectory = "dataMetrics";
+    private String fileInputDirectory = "DataFiles";
+    private String fileMetricDirectory = "DataMetrics";
     private Double LENIENCY = 0.5;
     private Integer MEASURESPERSECOND = 100; //number of data points recorded every second
     //hourlyData is lists of pairs of data points (1 list per hour)
-    private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList();
+    private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<ArrayList<ArrayList<Double>>>();
     
     /**
      * Creates new form DigitForm
@@ -96,7 +94,7 @@ public class DigitForm extends javax.swing.JFrame {
         graphPanel.add(chartPanel, BorderLayout.CENTER); //adds graph to empy graph Panel
         graphPanel.validate();
         this.setSize(this.getSize().width + 1, this.getSize().height + 1); //a good workaround... let's call it a dynamic solution
-        this.setSize(this.getSize().width - 1, this.getSize().height - 1);
+        this.setSize(this.getSize().width - 1, this.getSize().height - 1); // For some reason the graph will show when the window is resized
     }
     
     
@@ -119,8 +117,10 @@ public class DigitForm extends javax.swing.JFrame {
                 hourDataTemp.add(temp_point);
                 numLinesRead++;
                 line = reader.readLine();
-                if(line == null) { break; }
-            }
+                if(line == null) break;
+            } 
+           if (line == null)
+                break;
             
             hourlyData.add(hourDataTemp);
             hourDataTemp.clear();
@@ -133,10 +133,12 @@ public class DigitForm extends javax.swing.JFrame {
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
     
+        System.out.println(data.size());
         for (ArrayList<Double> point : data){ //split into x and y data lists
             data_x.add(point.get(0));
             data_y.add(point.get(1));
         }
+        
         Double x_range = Collections.max(data_x) - Collections.min(data_x); //find the range (max - min)
         Double y_range = Collections.max(data_y) - Collections.min(data_y);
 
@@ -281,7 +283,9 @@ public class DigitForm extends javax.swing.JFrame {
     
     private void computeMetricsFromRadioButtons()
     {
-        try 
+        if (day_selector.getSelectedIndex() == -1)
+            return;
+        try
         {
             String[] tempSplitString = day_selector.getSelectedItem().split("/"); //reformat file name correctly
             String formattedFileString = tempSplitString[2] + "_" + tempSplitString[0] + "_"
@@ -347,6 +351,23 @@ public class DigitForm extends javax.swing.JFrame {
                 tremors.add((double)find_tremors(hourlyData.get(i))); //casts int to Double
             }
             generateGraph("Tremors Data", "Time (Hours)", "Tremors (Units)", tremors);
+        }
+    }
+    
+    public void DisplayDeteriorationIndex()
+    {
+        if (new File("DataMetrics").listFiles().length < 14)
+        {
+            String result = "Deterioration Index will not display until after the first two weeks of usage.";
+        }
+        else
+        {
+            File[] files = new File("DataMetrics").listFiles();
+            Arrays.sort(files);
+            for (int counter = 0; counter < 14; counter++)
+            {
+                
+            }
         }
     }
 

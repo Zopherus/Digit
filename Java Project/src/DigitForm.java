@@ -8,24 +8,14 @@
 
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -46,12 +36,11 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class DigitForm extends javax.swing.JFrame {
 
     //class variables
-    private String fileInputDirectory = "DataFiles";
-    private String fileMetricDirectory = "DataMetrics";
-    private Double LENIENCY = 0.5;
-    private Integer MEASURESPERSECOND = 100; //number of data points recorded every second
+    private final String fileInputDirectory = "DataFiles";
+    private final String fileMetricDirectory = "DataMetrics";
+    private final Integer MEASURESPERSECOND = 100; //number of data points recorded every second
     //hourlyData is lists of pairs of data points (1 list per hour)
-    private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<ArrayList<ArrayList<Double>>>();
+    private final ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<>();
     
     /**
      * Creates new form DigitForm
@@ -65,13 +54,6 @@ public class DigitForm extends javax.swing.JFrame {
     {
         setSize(900, 550);
         setLocationRelativeTo(null);
-        
-        graphDisplayButtons.add(xRangeButton);
-        graphDisplayButtons.add(yRangeButton);
-        graphDisplayButtons.add(xModeButton);
-        graphDisplayButtons.add(yModeButton);
-        graphDisplayButtons.add(smoothnessButton);
-        graphDisplayButtons.add(tremorsButton);
         
         refreshFromDataDirectory();
     }
@@ -117,7 +99,7 @@ public class DigitForm extends javax.swing.JFrame {
                 numLinesRead++;
                 line = reader.readLine();
                 if(line == null) break;
-            } 
+            }
            if (line == null)
                 break;
             
@@ -126,143 +108,6 @@ public class DigitForm extends javax.swing.JFrame {
             numLinesRead = 0;
         }
         reader.close();
-    }
-
-    public ArrayList<Double> find_range_of_motion(ArrayList<ArrayList<Double>> data){ //calculate the range for x and y (seperate)
-        ArrayList<Double> data_x = new ArrayList<>();
-        ArrayList<Double> data_y = new ArrayList<>();
-    
-        for (ArrayList<Double> point : data){ //split into x and y data lists
-            data_x.add(point.get(0));
-            data_y.add(point.get(1));
-        }
-        
-        Double x_range = Collections.max(data_x) - Collections.min(data_x); //find the range (max - min)
-        Double y_range = Collections.max(data_y) - Collections.min(data_y);
-
-        ArrayList<Double> range_list = new ArrayList<>();
-        range_list.add(x_range);
-        range_list.add(y_range); 
-        
-        return range_list; //return range as simple coordinate
-    }
-   
-    private ArrayList<Double> find_mode(ArrayList<ArrayList<Double>> data){ //calculate average mode of data
-        ArrayList<Double> data_x = new ArrayList<>();
-        ArrayList<Double> data_y = new ArrayList<>();
-
-        for (ArrayList<Double> point : data){ //split into x and y data lists
-            data_x.add(point.get(0));
-            data_y.add(point.get(1));
-        }
-
-        ArrayList<Double> modes = new ArrayList<>();
-        modes.add(mode(data_x));
-        modes.add(mode(data_y));
-        return modes; //return mode (the average there are multiple modes)
-    }
-    
-    private Double find_muscle_smoothness(ArrayList<ArrayList<Double>> data){ //average acceleration between points
-        ArrayList<Double> velocity = new ArrayList<>();
-        for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
-            ArrayList<Double> temp_velocity = new ArrayList<>();
-            temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
-            temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
-            velocity.add(d2_distance_formula(temp_velocity));
-        }
-            
-        ArrayList<Double> acceleration_list = new ArrayList<>();
-        for (int i = 0; i < velocity.size() - 1; i++){ //calculate acceleraion (difference between velocity data points) and add to acceleration (omit any points with 0 velocity)
-            if((velocity.get(i) != 0.0) & (velocity.get(i+1) != 0.0)){
-                acceleration_list.add(Math.abs(velocity.get(i+1) - velocity.get(i)));
-            }
-        }
-                
-        Double acceleration = mean(acceleration_list); //find average acceleration
-        return acceleration;
-    }
-    
-    private Double d2_distance_formula(ArrayList<Double> point){ //distance formula for 2 dimensional
-        return Math.sqrt(Math.pow(point.get(0), 2) + Math.pow(point.get(1), 2));
-    }
-
-//                find_tremors code is being revised, so for now it is commented out
-    
-    private int find_tremors(ArrayList<ArrayList<Double>> data){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
-       ArrayList<Double> velocity = new ArrayList<>();
-        for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
-            ArrayList<Double> temp_velocity = new ArrayList<>();
-            temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
-            temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
-            velocity.add(d2_distance_formula(temp_velocity));
-        }
-            
-        ArrayList<Double> acceleration = new ArrayList<>();
-        for (int i = 0; i < velocity.size() - 1; i++){ //calculate acceleraion (difference between velocity data points) and add to acceleration
-            acceleration.add(Math.abs(velocity.get(i+1) - velocity.get(i)));
-        }
-        
-        int tremorCount = 0;
-        for (int counter = 0; counter < acceleration.size() - 5; counter++)
-        {
-            if (acceleration.get(counter) > LENIENCY && acceleration.get(counter + 1) < -LENIENCY 
-                    && acceleration.get(counter + 2) > LENIENCY)
-                tremorCount++;
-        }
-        return tremorCount;
-    }
-    
-    private Double mean(ArrayList<Double> list){ //calcualte mean
-        Double mean = 0.0;
-        for(int i = 0; i < list.size(); i++){
-            mean = mean + list.get(i);
-        }
-        mean = mean / list.size();
-        
-        return mean;
-    }
-    
-    //very quick implementation of finding mode (improve if time allows)
-    private Double mode(ArrayList<Double> list){ //returns mode (or if multiple, modal average)
-        ArrayList<Double> modes = new ArrayList<>();
-        ArrayList<Integer> frequency = new ArrayList<>();
-        for(int i = 0; i < list.size(); i++){ //add elements to modes/frequency
-            boolean in_list = false;
-            for(int j = 0; j < modes.size(); j++)
-            {
-                if(Objects.equals(modes.get(j), list.get(i))) //it is in the list (increase frequency)
-                {
-                    frequency.set(j, frequency.get(j) + 1);
-                    in_list = true;
-                }
-            }
-            if(!in_list) //it is not in the list (add new element)
-            {
-                modes.add(list.get(i));
-                frequency.add(i);
-            }
-        }
-        
-        Double average_mode = 0.0;
-        int num_modes = 0;
-        
-        Double largest_mode = 0.0;
-        for(int k = 0; k < modes.size(); k++)
-        {
-            if(modes.get(k) > largest_mode) //new largest found (replace previous)
-            {
-                largest_mode = modes.get(k);
-                average_mode = largest_mode;
-                num_modes = 1;
-            }
-            if(Objects.equals(modes.get(k), largest_mode))
-            {
-                average_mode = modes.get(k);
-                num_modes = 1;
-            }
-        }
-        
-        return average_mode / num_modes;
     }
     
     private void refreshFromDataDirectory()
@@ -280,91 +125,109 @@ public class DigitForm extends javax.swing.JFrame {
     }
     
     private ArrayList<Double> getMetricData(String metric, String fileName) //looks if metric file already exists and reads relevant
-    {                                                            //data (if it exists): otherwise, returns null
-        if(new File(fileMetricDirectory + "\\" + fileName).exists())
+    {
+        // If the file doesn't exist, calculate all the metrics
+        if(!new File(fileMetricDirectory + "\\" + fileName).exists())
         {
-            ArrayList<Double> metricResult = new ArrayList<>();
-            try 
+            
+        }
+        ArrayList<Double> metricResult = new ArrayList<>();
+        try 
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(fileMetricDirectory + "\\" + fileName));
+            String line = reader.readLine();
+            while(line != null) //for each line, split into component metrics and add relevant metric to result
             {
-                BufferedReader reader = new BufferedReader(new FileReader(fileMetricDirectory + "\\" + fileName));
-                String line = reader.readLine();
-                while(line != null) //for each line, split into component metrics and add relevant metric to result
-                {
-                    String[] tempResult = line.split(",");
-                    if(metric == "xrange") //1st item in line
-                    {
-                        if(tempResult[0] != "")
+                String[] tempResult = line.split(",");
+                switch (metric) {
+                    case "xrange":
+                        if(!tempResult[0].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[0]));
-                        }
-                    }
-                    else if(metric == "yrange") //2nd item in line
-                    {
-                        if(tempResult[1] != "")
+                        }   break;
+                    case "yrange":
+                        if(!tempResult[1].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[1]));
-                        }
-                    }
-                    else if(metric == "xmode") //3rd item in line
-                    {
-                        if(tempResult[2] != "")
+                        }   break;
+                    case "xmode":
+                        if(!tempResult[2].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[2]));
-                        }
-                    }
-                    else if(metric == "ymode") //4th item in line
-                    {
-                        if(tempResult[3] != "")
+                        }   break;
+                    case "ymode":
+                        if(!tempResult[3].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[3]));
-                        }
-                    }
-                    else if(metric == "smoothness") //5th item in line
-                    {
-                        if(tempResult[4] != "")
+                        }   break;
+                    case "smoothness":
+                        if(!tempResult[4].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[4]));
-                        }
-                    }
-                    else if(metric == "tremors") //6th item in line
-                    {
-                        if(tempResult[5] != "")
+                        }   break;
+                    case "tremors":
+                        if(!tempResult[5].equals(""))
                         {
                             metricResult.add(Double.parseDouble(tempResult[5]));
-                        }
-                    }
-                    
-                    line = reader.readLine();
+                        }   break;
                 }
-                reader.close();
-                return metricResult;
-            } 
-            catch (Exception ex) 
-            {
-                return null;
+
+                line = reader.readLine();
             }
+            reader.close();
+            return metricResult;
         }
-        else
+        catch (Exception ex) 
         {
-            return null; //metrics not yet computed
+            return null;
         }
     }
     
     private void computeMetricsFromRadioButtons()
     {
         if (day_selector.getSelectedIndex() == -1)
-            return;
+        {
+            JOptionPane.showConfirmDialog(this, "Please select a date", "Error", 2);
+        }
         
-        boolean compute = false;
+        String[] tempSplitString = day_selector.getSelectedItem().split("/"); //reformat file name correctly
+        String formattedFileString = tempSplitString[2] + "_" + tempSplitString[0] + "_"
+                                   + tempSplitString[1] + ".txt";
+        
+        if (xRangeButton.isSelected())
+        {
+            getMetricData("xrange", formattedFileString);
+        }
+        else if (yRangeButton.isSelected())
+        {
+            getMetricData("yrange", formattedFileString);
+        }
+        else if(xModeButton.isSelected())
+        {
+            getMetricData("xmode", formattedFileString);
+        }
+        else if (yModeButton.isSelected())
+        {
+            getMetricData("ymode", formattedFileString);
+        }
+        else if (smoothnessButton.isSelected())
+        {
+            getMetricData("smoothness", formattedFileString);
+        }
+        else if (tremorsButton.isSelected())
+        {
+            getMetricData("tremors", formattedFileString);
+        }
+        
+        /*boolean compute = false;
         String[] tempSplitString = day_selector.getSelectedItem().split("/"); //reformat file name correctly
         String formattedFileString = tempSplitString[2] + "_" + tempSplitString[0] + "_"
                                    + tempSplitString[1] + ".txt";
         if(getMetricData("xrange", formattedFileString) == null) //if metrics don't exist, tell code to compute metrics
         {                                                        //(boolean variable) and load data for later
-            compute = true; 
+            compute = true;
             try
             {
-                
                 importDataFromFile(fileInputDirectory + "\\" + formattedFileString);
             }
             catch (IOException ex)
@@ -385,7 +248,7 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    xRange.add(find_range_of_motion(hourlyData.get(i)).get(0));
+                    xRange.add(Computation.find_range_of_motion(hourlyData.get(i)).get(0));
                 }
             }
                     generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", xRange);
@@ -402,7 +265,7 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    yRange.add(find_range_of_motion(hourlyData.get(i)).get(1));
+                    yRange.add(Computation.find_range_of_motion(hourlyData.get(i)).get(1));
                 }
             }
             generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", yRange);
@@ -419,7 +282,7 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    xMode.add(find_mode(hourlyData.get(i)).get(0));
+                    xMode.add(Computation.find_mode(hourlyData.get(i)).get(0));
                 }
             }
             generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", xMode);
@@ -436,7 +299,7 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    yMode.add(find_mode(hourlyData.get(i)).get(1));
+                    yMode.add(Computation.find_mode(hourlyData.get(i)).get(1));
                 }
             }
             generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", yMode);
@@ -453,7 +316,7 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    smoothness.add(find_muscle_smoothness(hourlyData.get(i)));
+                    smoothness.add(Computation.find_muscle_smoothness(hourlyData.get(i)));
                 }
             }
             generateGraph("Muscle Smoothness Data", "Time (Hours)", "Muscle Smoothness (Units)", smoothness);
@@ -470,11 +333,11 @@ public class DigitForm extends javax.swing.JFrame {
             {
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
-                    tremors.add((double)find_tremors(hourlyData.get(i))); //casts int to Double
+                    tremors.add((double)Computation.find_tremors(hourlyData.get(i))); //casts int to Double
                 }
             }
             generateGraph("Tremors Data", "Time (Hours)", "Tremors (Number of Tremors)", tremors);      
-        }
+        }*/
     }
     
     public void DisplayDeteriorationIndex()
@@ -538,17 +401,23 @@ public class DigitForm extends javax.swing.JFrame {
             }
         });
 
+        graphDisplayButtons.add(xRangeButton);
         xRangeButton.setSelected(true);
         xRangeButton.setText("X Range");
 
+        graphDisplayButtons.add(yRangeButton);
         yRangeButton.setText("Y Range");
 
+        graphDisplayButtons.add(xModeButton);
         xModeButton.setText("X Mode");
 
+        graphDisplayButtons.add(yModeButton);
         yModeButton.setText("Y Mode");
 
+        graphDisplayButtons.add(smoothnessButton);
         smoothnessButton.setText("Muscle Smoothness");
 
+        graphDisplayButtons.add(tremorsButton);
         tremorsButton.setText("Tremors");
 
         graphPanel.setLayout(new java.awt.BorderLayout());

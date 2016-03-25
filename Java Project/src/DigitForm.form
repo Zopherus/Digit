@@ -136,32 +136,50 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="xRangeButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="X Range"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="yRangeButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Y Range"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="xModeButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="X Mode"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="yModeButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Y Mode"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="smoothnessButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Muscle Smoothness"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="tremorsButton">
       <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="graphDisplayButtons"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Tremors"/>
       </Properties>
     </Component>

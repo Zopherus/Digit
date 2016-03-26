@@ -8,8 +8,10 @@
 
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import computations.Computation;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -126,59 +129,128 @@ public class DigitForm extends javax.swing.JFrame {
     
     private ArrayList<Double> getMetricData(String metric, String fileName) //looks if metric file already exists and reads relevant
     {
-        // If the file doesn't exist, calculate all the metrics
-        if(!new File(fileMetricDirectory + "\\" + fileName).exists())
+    
+        ArrayList<ArrayList<Double>> metricResultAll = new ArrayList<>();
+        try
         {
-            
-        }
-        ArrayList<Double> metricResult = new ArrayList<>();
-        try 
-        {
-            BufferedReader reader = new BufferedReader(new FileReader(fileMetricDirectory + "\\" + fileName));
-            String line = reader.readLine();
-            while(line != null) //for each line, split into component metrics and add relevant metric to result
+            // If the file doesn't exist, calculate all the metrics and write to file
+            if(!new File(fileMetricDirectory + "\\" + fileName).exists())
             {
-                String[] tempResult = line.split(",");
-                switch (metric) {
-                    case "xrange":
-                        if(!tempResult[0].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[0]));
-                        }   break;
-                    case "yrange":
-                        if(!tempResult[1].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[1]));
-                        }   break;
-                    case "xmode":
-                        if(!tempResult[2].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[2]));
-                        }   break;
-                    case "ymode":
-                        if(!tempResult[3].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[3]));
-                        }   break;
-                    case "smoothness":
-                        if(!tempResult[4].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[4]));
-                        }   break;
-                    case "tremors":
-                        if(!tempResult[5].equals(""))
-                        {
-                            metricResult.add(Double.parseDouble(tempResult[5]));
-                        }   break;
-                }
+                importDataFromFile(fileInputDirectory + "\\" + fileName);
+                
+                Computation compute = new Computation();
+                BufferedWriter writer = new BufferedWriter(new FileWriter(fileMetricDirectory + "\\" + fileName));
 
-                line = reader.readLine();
+                ArrayList<Double> rangeX = new ArrayList<Double>();
+                ArrayList<Double> rangeY = new ArrayList<Double>();
+                ArrayList<Double> modeX = new ArrayList<Double>();
+                ArrayList<Double> modeY = new ArrayList<Double>();
+                ArrayList<Double> smoothness = new ArrayList<Double>();
+                ArrayList<Double> tremors = new ArrayList<Double>();
+                
+                for(int i = 0; i < hourlyData.size(); i++)
+                {
+                    String output = "";
+                    
+                    ArrayList<Double> rangePoint = compute.find_range_of_motion(hourlyData.get(i));
+                    rangeX.add(rangePoint.get(0));
+                    output += rangePoint.get(0).toString() + ",";
+                    
+                    rangeY.add(rangePoint.get(1));
+                    output += rangePoint.get(1).toString() + ",";
+                    
+                    ArrayList<Double> modePoint = compute.find_mode(hourlyData.get(i));
+                    modeX.add(modePoint.get(0));
+                    output += modePoint.get(0).toString() + ",";
+                    
+                    modeY.add(modePoint.get(1));
+                    output += modePoint.get(1).toString() + ",";
+                    
+                    smoothness.add(compute.find_muscle_smoothness(hourlyData.get(i)));
+                    output += smoothness.get(i).toString() + ",";
+                    
+                    tremors.add((double)compute.find_tremors(hourlyData.get(i)));
+                    output += tremors.get(i).toString();
+                    
+                    writer.write(output);                   
+                    writer.newLine();
+                }                
+                metricResultAll.add(rangeX);
+                metricResultAll.add(rangeY);
+                metricResultAll.add(modeX);
+                metricResultAll.add(modeY);
+                metricResultAll.add(smoothness);
+                metricResultAll.add(tremors);
+                
+                writer.close();
+                
+                switch (metric) {
+                        case "xrange":
+                            return metricResultAll.get(0);
+                        case "yrange":
+                            return metricResultAll.get(1);
+                        case "xmode":
+                            return metricResultAll.get(2);
+                        case "ymode":
+                            return metricResultAll.get(3);
+                        case "smoothness":
+                            return metricResultAll.get(4);
+                        case "tremors":
+                            return metricResultAll.get(5);
+                    }
+                return null;
             }
-            reader.close();
-            return metricResult;
+            else
+            {
+                ArrayList<Double> metricResult = new ArrayList<>();
+                BufferedReader reader = new BufferedReader(new FileReader(fileInputDirectory + "\\" + fileName));
+                String line = reader.readLine();
+                
+                while(line != null)
+                {
+                    String[] tempResult = line.split(",");
+                    switch (metric) {
+                        case "xrange":
+                            if(!tempResult[0].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[0]));
+                            }   break;
+                        case "yrange":
+                            if(!tempResult[1].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[1]));
+                            }   break;
+                        case "xmode":
+                            if(!tempResult[2].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[2]));
+                            }   break;
+                        case "ymode":
+                            if(!tempResult[3].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[3]));
+                            }   break;
+                        case "smoothness":
+                            if(!tempResult[4].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[4]));
+                            }   break;
+                        case "tremors":
+                            if(!tempResult[5].equals(""))
+                            {
+                                metricResult.add(Double.parseDouble(tempResult[5]));
+                            }   break;
+                    }
+
+                    line = reader.readLine();
+                }
+                reader.close();
+                return metricResult;       
+            }
         }
         catch (Exception ex) 
         {
+            System.out.println("error" + ex.toString());
             return null;
         }
     }
@@ -196,148 +268,28 @@ public class DigitForm extends javax.swing.JFrame {
         
         if (xRangeButton.isSelected())
         {
-            getMetricData("xrange", formattedFileString);
+            generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", getMetricData("xrange", formattedFileString));
         }
         else if (yRangeButton.isSelected())
         {
-            getMetricData("yrange", formattedFileString);
+            generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", getMetricData("yrange", formattedFileString));
         }
         else if(xModeButton.isSelected())
         {
-            getMetricData("xmode", formattedFileString);
+            generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", getMetricData("xmode", formattedFileString));
         }
         else if (yModeButton.isSelected())
         {
-            getMetricData("ymode", formattedFileString);
+            generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", getMetricData("yrange", formattedFileString));
         }
         else if (smoothnessButton.isSelected())
         {
-            getMetricData("smoothness", formattedFileString);
+            generateGraph("Smoothness Data", "Time (Hours)", "Smoothness (Units)", getMetricData("smoothness", formattedFileString));
         }
         else if (tremorsButton.isSelected())
         {
-            getMetricData("tremors", formattedFileString);
+            generateGraph("Tremors Data", "Time (Hours)", "Tremors (Number of Tremors)", getMetricData("tremors", formattedFileString));
         }
-        
-        /*boolean compute = false;
-        String[] tempSplitString = day_selector.getSelectedItem().split("/"); //reformat file name correctly
-        String formattedFileString = tempSplitString[2] + "_" + tempSplitString[0] + "_"
-                                   + tempSplitString[1] + ".txt";
-        if(getMetricData("xrange", formattedFileString) == null) //if metrics don't exist, tell code to compute metrics
-        {                                                        //(boolean variable) and load data for later
-            compute = true;
-            try
-            {
-                importDataFromFile(fileInputDirectory + "\\" + formattedFileString);
-            }
-            catch (IOException ex)
-            {
-                //Uh-Oh! an error occurred... find a way to fix it, I guess
-                System.out.println(ex.getMessage());
-            }
-        }
-            
-        if(xRangeButton.isSelected())
-        {
-            ArrayList<Double> xRange = new ArrayList();
-            if(compute == false)
-            {
-                xRange = getMetricData("xrange", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    xRange.add(Computation.find_range_of_motion(hourlyData.get(i)).get(0));
-                }
-            }
-                    generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", xRange);
-        }
-        
-        else if(yRangeButton.isSelected())
-        {
-            ArrayList<Double> yRange = new ArrayList();
-            if(compute == false)
-            {
-                yRange = getMetricData("yrange", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    yRange.add(Computation.find_range_of_motion(hourlyData.get(i)).get(1));
-                }
-            }
-            generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", yRange);
-        }
-        
-        else if(xModeButton.isSelected())
-        {
-            ArrayList<Double> xMode = new ArrayList();
-            if(compute == false)
-            {
-                xMode = getMetricData("xmode", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    xMode.add(Computation.find_mode(hourlyData.get(i)).get(0));
-                }
-            }
-            generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", xMode);
-        }
-        
-        else if(yModeButton.isSelected())
-        {
-            ArrayList<Double> yMode = new ArrayList();
-            if(compute == false)
-            {
-                yMode = getMetricData("ymode", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    yMode.add(Computation.find_mode(hourlyData.get(i)).get(1));
-                }
-            }
-            generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", yMode);
-        }
-        
-        else if(smoothnessButton.isSelected())
-        {
-            ArrayList<Double> smoothness = new ArrayList();
-            if(compute == false)
-            {
-                smoothness = getMetricData("smoothness", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    smoothness.add(Computation.find_muscle_smoothness(hourlyData.get(i)));
-                }
-            }
-            generateGraph("Muscle Smoothness Data", "Time (Hours)", "Muscle Smoothness (Units)", smoothness);
-        }
-        
-        else if(tremorsButton.isSelected())
-        {
-            ArrayList<Double> tremors = new ArrayList();
-            if(compute == false)
-            {
-                tremors = getMetricData("tremors", formattedFileString);
-            }
-            else
-            {
-                for(int i = 0; i < hourlyData.size(); i++)
-                {
-                    tremors.add((double)Computation.find_tremors(hourlyData.get(i))); //casts int to Double
-                }
-            }
-            generateGraph("Tremors Data", "Time (Hours)", "Tremors (Number of Tremors)", tremors);      
-        }*/
     }
     
     public void DisplayDeteriorationIndex()

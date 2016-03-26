@@ -1,4 +1,4 @@
-
+package computations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public class Computation {
     
-    public static ArrayList<Double> find_range_of_motion(ArrayList<ArrayList<Double>> data){ //calculate the range for x and y (seperate)
+    public ArrayList<Double> find_range_of_motion(ArrayList<ArrayList<Double>> data){ //calculate the range for x and y (seperate)
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
     
@@ -34,7 +34,7 @@ public class Computation {
         return range_list; //return range as simple coordinate
     }
     
-    public static ArrayList<Double> find_mode(ArrayList<ArrayList<Double>> data){ //calculate average mode of data
+    public ArrayList<Double> find_mode(ArrayList<ArrayList<Double>> data){ //calculate average mode of data
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class Computation {
         return modes; //return mode (the average there are multiple modes)
     }
     
-    public static Double find_muscle_smoothness(ArrayList<ArrayList<Double>> data){ //average acceleration between points
+    public Double find_muscle_smoothness(ArrayList<ArrayList<Double>> data){ //average acceleration between points
         ArrayList<Double> velocity = new ArrayList<>();
         for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
             ArrayList<Double> temp_velocity = new ArrayList<>();
@@ -69,7 +69,7 @@ public class Computation {
         return acceleration;
     }
     
-     public static int find_tremors(ArrayList<ArrayList<Double>> data){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
+     public int find_tremors(ArrayList<ArrayList<Double>> data){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
        ArrayList<Double> velocity = new ArrayList<>();
         for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
             ArrayList<Double> temp_velocity = new ArrayList<>();
@@ -93,7 +93,7 @@ public class Computation {
         return tremorCount;
     }
      
-    public static Double mean(ArrayList<Double> list){ //calcualte mean
+    public Double mean(ArrayList<Double> list){ //calcualte mean
         Double mean = 0.0;
         for(int i = 0; i < list.size(); i++){
             mean = mean + list.get(i);
@@ -104,7 +104,7 @@ public class Computation {
     }
     
     //very quick implementation of finding mode (improve if time allows)
-    private static Double mode(ArrayList<Double> list){ //returns mode (or if multiple, modal average)
+    private Double mode(ArrayList<Double> list){ //returns mode (or if multiple, modal average)
         ArrayList<Double> modes = new ArrayList<>();
         ArrayList<Integer> frequency = new ArrayList<>();
         for(int i = 0; i < list.size(); i++){ //add elements to modes/frequency
@@ -146,7 +146,7 @@ public class Computation {
         return average_mode / num_modes;
     }
     
-    private static Double d2_distance_formula(ArrayList<Double> point){ //distance formula for 2 dimensional
+    private Double d2_distance_formula(ArrayList<Double> point){ //distance formula for 2 dimensional
         return Math.sqrt(Math.pow(point.get(0), 2) + Math.pow(point.get(1), 2));
     }
     

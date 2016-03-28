@@ -129,7 +129,6 @@ public class DigitForm extends javax.swing.JFrame {
     
     private ArrayList<Double> getMetricData(String metric, String fileName) //looks if metric file already exists and reads relevant
     {
-    
         ArrayList<ArrayList<Double>> metricResultAll = new ArrayList<>();
         try
         {
@@ -203,7 +202,7 @@ public class DigitForm extends javax.swing.JFrame {
             else
             {
                 ArrayList<Double> metricResult = new ArrayList<>();
-                BufferedReader reader = new BufferedReader(new FileReader(fileInputDirectory + "\\" + fileName));
+                BufferedReader reader = new BufferedReader(new FileReader(fileMetricDirectory + "\\" + fileName));
                 String line = reader.readLine();
                 
                 while(line != null)
@@ -320,7 +319,6 @@ public class DigitForm extends javax.swing.JFrame {
 
         graphDisplayButtons = new javax.swing.ButtonGroup();
         day_selector = new java.awt.List();
-        compute_metrics = new java.awt.Button();
         refresh = new java.awt.Button();
         xRangeButton = new javax.swing.JRadioButton();
         yRangeButton = new javax.swing.JRadioButton();
@@ -335,13 +333,9 @@ public class DigitForm extends javax.swing.JFrame {
         setPreferredSize(new java.awt.Dimension(900, 500));
 
         day_selector.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
-
-        compute_metrics.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
-        compute_metrics.setLabel("Display Graph");
-        compute_metrics.setName(""); // NOI18N
-        compute_metrics.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                compute_metricsMouseClicked(evt);
+        day_selector.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                day_selectorItemStateChanged(evt);
             }
         });
 
@@ -356,21 +350,51 @@ public class DigitForm extends javax.swing.JFrame {
         graphDisplayButtons.add(xRangeButton);
         xRangeButton.setSelected(true);
         xRangeButton.setText("X Range");
+        xRangeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                xRangeButtonMouseClicked(evt);
+            }
+        });
 
         graphDisplayButtons.add(yRangeButton);
         yRangeButton.setText("Y Range");
+        yRangeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                yRangeButtonMouseClicked(evt);
+            }
+        });
 
         graphDisplayButtons.add(xModeButton);
         xModeButton.setText("X Mode");
+        xModeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                xModeButtonMouseClicked(evt);
+            }
+        });
 
         graphDisplayButtons.add(yModeButton);
         yModeButton.setText("Y Mode");
+        yModeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                yModeButtonMouseClicked(evt);
+            }
+        });
 
         graphDisplayButtons.add(smoothnessButton);
         smoothnessButton.setText("Muscle Smoothness");
+        smoothnessButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                smoothnessButtonMouseClicked(evt);
+            }
+        });
 
         graphDisplayButtons.add(tremorsButton);
         tremorsButton.setText("Tremors");
+        tremorsButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tremorsButtonMouseClicked(evt);
+            }
+        });
 
         graphPanel.setLayout(new java.awt.BorderLayout());
 
@@ -380,9 +404,7 @@ public class DigitForm extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(refresh, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                    .addComponent(day_selector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -398,50 +420,71 @@ public class DigitForm extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(tremorsButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(compute_metrics, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 368, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(xRangeButton)
-                            .addComponent(yRangeButton)
-                            .addComponent(xModeButton)
-                            .addComponent(yModeButton)
-                            .addComponent(tremorsButton)
-                            .addComponent(smoothnessButton))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(xRangeButton)
+                                    .addComponent(yRangeButton)
+                                    .addComponent(xModeButton)
+                                    .addComponent(yModeButton)
+                                    .addComponent(tremorsButton)
+                                    .addComponent(smoothnessButton))
+                                .addGap(0, 17, Short.MAX_VALUE))
+                            .addComponent(refresh, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(day_selector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-
-        compute_metrics.getAccessibleContext().setAccessibleDescription("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    //when compute metrics button is pressed, compute metrics based on radio button
-    private void compute_metricsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_compute_metricsMouseClicked
-        computeMetricsFromRadioButtons();
-    }//GEN-LAST:event_compute_metricsMouseClicked
-
     //when refresh button is clicked, take all file names from directory and put in list
     private void refreshMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refreshMouseClicked
         refreshFromDataDirectory();
+        computeMetricsFromRadioButtons();
     }//GEN-LAST:event_refreshMouseClicked
+
+    private void day_selectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_day_selectorItemStateChanged
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_day_selectorItemStateChanged
+
+    private void xRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xRangeButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_xRangeButtonMouseClicked
+
+    private void yRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yRangeButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_yRangeButtonMouseClicked
+
+    private void xModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xModeButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_xModeButtonMouseClicked
+
+    private void yModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yModeButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_yModeButtonMouseClicked
+
+    private void smoothnessButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_smoothnessButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_smoothnessButtonMouseClicked
+
+    private void tremorsButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tremorsButtonMouseClicked
+        computeMetricsFromRadioButtons();
+    }//GEN-LAST:event_tremorsButtonMouseClicked
 
     /**
      * @param args the command line arguments
@@ -479,7 +522,6 @@ public class DigitForm extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private java.awt.Button compute_metrics;
     private java.awt.List day_selector;
     private javax.swing.ButtonGroup graphDisplayButtons;
     private javax.swing.JPanel graphPanel;

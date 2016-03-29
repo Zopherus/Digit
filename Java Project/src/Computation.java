@@ -1,4 +1,4 @@
-package computations;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -84,11 +84,31 @@ public class Computation {
         }
         
         int tremorCount = 0;
-        for (int counter = 0; counter < acceleration.size() - 5; counter++)
+        int startingPosition = 0;
+        Boolean startingPositionIsPositive = false;     //negative is false, positive is true
+        for (int counter = 0; counter < acceleration.size(); counter++)
         {
-            if (acceleration.get(counter) > 0 && acceleration.get(counter + 1) < 0 
-                    && acceleration.get(counter + 2) > 0)
-                tremorCount++;
+            // Cases where is possibly tremor
+            if (acceleration.get(counter) < 0 && startingPositionIsPositive 
+                    && counter - startingPosition >= 8 && counter - startingPosition <= 12)
+            {
+                int interval = counter - startingPosition;
+                int numberOfIntervals = 1;
+                while (counter + numberOfIntervals * interval < acceleration.size())
+                {
+                    
+                }
+            }
+            else if (acceleration.get(counter) >= 0 && !startingPositionIsPositive 
+                    && counter - startingPosition >= 8 && counter - startingPosition <= 12)
+            {
+                int interval = counter - startingPosition;
+            }
+            // Cases where not tremor, but acceleration sign has shifted
+            else if (acceleration.get(counter) < 0 && startingPositionIsPositive)
+            {}
+            else if (acceleration.get(counter) >= 0 && !startingPositionIsPositive)
+            {}
         }
         return tremorCount;
     }

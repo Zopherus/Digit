@@ -20,7 +20,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import computations.Computation;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

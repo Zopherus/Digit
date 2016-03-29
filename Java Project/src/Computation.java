@@ -96,19 +96,48 @@ public class Computation {
                 int numberOfIntervals = 1;
                 while (counter + numberOfIntervals * interval < acceleration.size())
                 {
-                    
+                    if (acceleration.get(counter + numberOfIntervals * interval) < 0 && startingPositionIsPositive ||
+                            acceleration.get(counter + numberOfIntervals * interval) >= 0 && !startingPositionIsPositive)
+                    {
+                        startingPositionIsPositive = !startingPositionIsPositive;
+                        numberOfIntervals++;
+                    }
+                    else
+                        break;
                 }
+                if (numberOfIntervals >= 5)
+                    tremorCount++;
             }
             else if (acceleration.get(counter) >= 0 && !startingPositionIsPositive 
                     && counter - startingPosition >= 8 && counter - startingPosition <= 12)
             {
                 int interval = counter - startingPosition;
+                int numberOfIntervals = 1;
+                while (counter + numberOfIntervals * interval < acceleration.size())
+                {
+                    if (acceleration.get(counter + numberOfIntervals * interval) < 0 && startingPositionIsPositive ||
+                            acceleration.get(counter + numberOfIntervals * interval) >= 0 && !startingPositionIsPositive)
+                    {
+                        startingPositionIsPositive = !startingPositionIsPositive;
+                        numberOfIntervals++;
+                    }
+                    else
+                        break;
+                }
+                if (numberOfIntervals >= 5)
+                    tremorCount++;
             }
             // Cases where not tremor, but acceleration sign has shifted
             else if (acceleration.get(counter) < 0 && startingPositionIsPositive)
-            {}
+            {
+                startingPosition = counter;
+                startingPositionIsPositive = true;
+            }
             else if (acceleration.get(counter) >= 0 && !startingPositionIsPositive)
-            {}
+            {
+                startingPosition = counter;
+                startingPositionIsPositive = false;
+            }
         }
         return tremorCount;
     }

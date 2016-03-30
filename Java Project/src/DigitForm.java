@@ -15,6 +15,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -139,12 +141,12 @@ public class DigitForm extends javax.swing.JFrame {
                 Computation compute = new Computation();
                 BufferedWriter writer = new BufferedWriter(new FileWriter(fileMetricDirectory + "\\" + fileName));
 
-                ArrayList<Double> rangeX = new ArrayList<Double>();
-                ArrayList<Double> rangeY = new ArrayList<Double>();
-                ArrayList<Double> modeX = new ArrayList<Double>();
-                ArrayList<Double> modeY = new ArrayList<Double>();
-                ArrayList<Double> smoothness = new ArrayList<Double>();
-                ArrayList<Double> tremors = new ArrayList<Double>();
+                ArrayList<Double> rangeX = new ArrayList<>();
+                ArrayList<Double> rangeY = new ArrayList<>();
+                ArrayList<Double> modeX = new ArrayList<>();
+                ArrayList<Double> modeY = new ArrayList<>();
+                ArrayList<Double> smoothness = new ArrayList<>();
+                ArrayList<Double> tremors = new ArrayList<>();
                 
                 for(int i = 0; i < hourlyData.size(); i++)
                 {
@@ -248,7 +250,7 @@ public class DigitForm extends javax.swing.JFrame {
         }
         catch (Exception ex) 
         {
-            System.out.println("error" + ex.toString());
+            System.out.println(ex.toString());
             return null;
         }
     }
@@ -266,7 +268,7 @@ public class DigitForm extends javax.swing.JFrame {
         
         if (xRangeButton.isSelected())
         {
-            generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", getMetricData("xrange", formattedFileString));
+            generateGraph("X Range Data", "Time (Hou^rs)", "X Range (Units)", getMetricData("xrange", formattedFileString));
         }
         else if (yRangeButton.isSelected())
         {
@@ -288,22 +290,11 @@ public class DigitForm extends javax.swing.JFrame {
         {
             generateGraph("Tremors Data", "Time (Hours)", "Tremors (Number of Tremors)", getMetricData("tremors", formattedFileString));
         }
-    }
-    
-    public void DisplayDeteriorationIndex()
-    {
-        if (new File("DataMetrics").listFiles().length < 14)
-        {
-            String result = "Deterioration Index will not display until after the first two weeks of usage.";
-        }
-        else
-        {
-            File[] files = new File("DataMetrics").listFiles();
-            Arrays.sort(files);
-            for (int counter = 0; counter < 14; counter++)
-            {
-                
-            }
+        Computation computation = new Computation();
+        try {
+            System.out.println(computation.deteriorationIndex());
+        } catch (IOException ex) {
+            Logger.getLogger(DigitForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

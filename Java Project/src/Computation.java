@@ -1,4 +1,9 @@
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -90,7 +95,7 @@ public class Computation {
         {
             // Cases where is possibly tremor
             if (acceleration.get(counter) < 0 && startingPositionIsPositive 
-                    && counter - startingPosition >= 8 && counter - startingPosition <= 12)
+                    && counter - startingPosition >= 8 && counter - startingPosition <= 16)
             {
                 int interval = counter - startingPosition;
                 int numberOfIntervals = 1;
@@ -109,7 +114,7 @@ public class Computation {
                     tremorCount++;
             }
             else if (acceleration.get(counter) >= 0 && !startingPositionIsPositive 
-                    && counter - startingPosition >= 8 && counter - startingPosition <= 12)
+                    && counter - startingPosition >= 8 && counter - startingPosition <= 16)
             {
                 int interval = counter - startingPosition;
                 int numberOfIntervals = 1;
@@ -191,8 +196,107 @@ public class Computation {
                 num_modes = 1;
             }
         }
-        
         return average_mode / num_modes;
+    }
+    
+    public String deteriorationIndex() throws FileNotFoundException, IOException
+    {
+        if (new File("DataMetrics").list().length < 8 && new File("DataFiles").list().length < 8)
+            return "Deterioration index will only work after the first week.";
+        
+        double modeTotal = 0;
+        double accelerationTotal = 0;
+        double usageTotal = 0;
+        for (int counter = 1; counter < 8; counter++)
+        {
+            String day = new File("DataMetrics").list()[counter];
+            BufferedReader reader = new BufferedReader(new FileReader("DataMetrics\\" + day));
+            String line = reader.readLine();
+            while(line != null)
+            {
+                String[] metrics = line.split(",");
+                modeTotal += Double.parseDouble(metrics[2]);
+                modeTotal += Double.parseDouble(metrics[3]);
+                accelerationTotal += Double.parseDouble(metrics[4]);
+                line = reader.readLine();
+            }
+            
+            reader = new BufferedReader(new FileReader("DataFiles\\" + day));
+            line = reader.readLine();
+            String[] lastDataPoint = line.split(" ");
+            line = reader.readLine();
+            while (line != null)
+            {
+                String[] data = line.split(" ");
+                
+                double[] distance = {Double.parseDouble(data[0]) - Double.parseDouble(lastDataPoint[0]),
+                    Double.parseDouble(data[1]) - Double.parseDouble(lastDataPoint[1])};
+                usageTotal += Math.sqrt(Math.pow(distance[0], 2) + Math.pow(distance[1], 2));
+                line = reader.readLine();
+            }
+        }
+        
+        double modeWeekAverage = modeTotal / 14.0;
+        double accelerationWeekAverage = accelerationTotal / 7.0;
+        double usageWeekAverage = usageTotal / 7.0;
+        
+        String today = new File("DataMetrics").list()[0];
+        BufferedReader reader = new BufferedReader(new FileReader("DataMetrics\\" + today));
+        
+        modeTotal = 0;
+        accelerationTotal = 0;
+        double tremorsTotal = 0;
+        usageTotal = 0;
+        
+        String line = reader.readLine();
+        while (line != null)
+        {
+            String[] metrics = line.split(",");
+            modeTotal += Double.parseDouble(metrics[2]);
+            modeTotal += Double.parseDouble(metrics[3]);
+            accelerationTotal += Double.parseDouble(metrics[4]);
+            tremorsTotal += Double.parseDouble(metrics[5]);
+            line = reader.readLine();
+        }
+        
+        reader = new BufferedReader(new FileReader("DataFiles\\" + today));
+        line = reader.readLine();
+        String[] lastDataPoint = line.split(" ");
+        line = reader.readLine();
+        while (line != null)
+        {
+            String[] data = line.split(" ");
+
+            double[] distance = {Double.parseDouble(data[0]) - Double.parseDouble(lastDataPoint[0]),
+                Double.parseDouble(data[1]) - Double.parseDouble(lastDataPoint[1])};
+            usageTotal += Math.sqrt(Math.pow(distance[0], 2) + Math.pow(distance[1], 2));
+            line = reader.readLine();
+        }
+        
+        double modeDayAverage = modeTotal / 2.0;
+        double accelerationDayAverage = accelerationTotal / 1.0;
+        
+        double PercentChangeModalPosition = 100 * (modeDayAverage - modeWeekAverage) / modeWeekAverage;
+        double PercentChangeAcceleration = -100 * (accelerationDayAverage - accelerationWeekAverage) / accelerationWeekAverage;
+        double PercentUsageChange = usageWeekAverage / usageTotal;
+        
+        double DeteriorationIndex = (PercentChangeModalPosition + PercentChangeAcceleration + tremorsTotal) * PercentUsageChange;
+        
+        return "Your deterioration index is " + Double.toString(DeteriorationIndex) + ".";
+    }
+    
+    private double usage(ArrayList<ArrayList<Double>> data)
+    {
+        double total = 0;
+        for (int i = 0; i < data.size() - 1; i++)
+        {
+            // (difference between data points) and add to total distance
+            ArrayList<Double> temp_velocity = new ArrayList<>();
+            temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
+            temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
+            total += d2_distance_formula(temp_velocity);
+        }
+        return total;
     }
     
     private Double d2_distance_formula(ArrayList<Double> point){ //distance formula for 2 dimensional

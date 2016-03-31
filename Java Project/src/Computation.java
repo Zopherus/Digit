@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -28,7 +26,8 @@ public class Computation {
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
     
-        for (ArrayList<Double> point : data){ //split into x and y data lists
+        for (ArrayList<Double> point : data)
+        { //split into x and y data lists
             data_x.add(point.get(0));
             data_y.add(point.get(1));
         }
@@ -47,7 +46,8 @@ public class Computation {
         ArrayList<Double> data_x = new ArrayList<>();
         ArrayList<Double> data_y = new ArrayList<>();
 
-        for (ArrayList<Double> point : data){ //split into x and y data lists
+        for (ArrayList<Double> point : data)
+        { //split into x and y data lists
             data_x.add(point.get(0));
             data_y.add(point.get(1));
         }
@@ -58,7 +58,9 @@ public class Computation {
         return modes; //return mode (the average there are multiple modes)
     }
     
-    public Double find_muscle_smoothness(ArrayList<ArrayList<Double>> data){ //average acceleration between points
+    public Double find_muscle_smoothness(ArrayList<ArrayList<Double>> data)
+    {
+        //average acceleration between points
         ArrayList<Double> velocity = new ArrayList<>();
         for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
             ArrayList<Double> temp_velocity = new ArrayList<>();
@@ -156,7 +158,7 @@ public class Computation {
         for(int i = 0; i < list.size(); i++){
             mean = mean + list.get(i);
         }
-        mean = mean / list.size();
+        mean = mean / (double)list.size();
         
         return mean;
     }
@@ -251,7 +253,7 @@ public class Computation {
             line = reader.readLine();
         }
         
-        usageTotal += calculateTotalDistance("DataFiles\\" + today, "DistanceCalculations\\" + today); //same as above, but for today
+        usageTotal = calculateTotalDistance("DataFiles\\" + today, "DistanceCalculations\\" + today); //same as above, but for today
                                                                                                        //(add distance to usage)
         
         double modeDayAverage = modeTotal / 2.0;
@@ -262,7 +264,8 @@ public class Computation {
         double PercentUsageChange = usageWeekAverage / usageTotal;
         
         double DeteriorationIndex = (PercentChangeModalPosition + PercentChangeAcceleration + tremorsTotal) * PercentUsageChange;
-        
+        DeteriorationIndex = (double)Math.round(DeteriorationIndex * 1000.0) / 1000.0;
+
         return "Your deterioration index is " + Double.toString(DeteriorationIndex) + ".";
     }
     
@@ -280,17 +283,19 @@ public class Computation {
                 while(line != null)
                 {
                     totalDistance += Double.parseDouble(line); //read distance from file and add it to totalDistance
+                    line = reader.readLine();
                 }
                 reader.close();
             } 
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 System.out.println(ex.getMessage());
             }
         }
         else //otherwise, calculate it ourselves
         {
             try
-            {                
+            {
                 BufferedReader reader = new BufferedReader(new FileReader(rawDataFilePath));
                 BufferedWriter writer = new BufferedWriter(new FileWriter(accelerationFilePath));
                 String line = reader.readLine();
@@ -319,20 +324,6 @@ public class Computation {
             }
         }
         return totalDistance;
-    }
-    
-    private double usage(ArrayList<ArrayList<Double>> data)
-    {
-        double total = 0;
-        for (int i = 0; i < data.size() - 1; i++)
-        {
-            // (difference between data points) and add to total distance
-            ArrayList<Double> temp_velocity = new ArrayList<>();
-            temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
-            temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
-            total += d2_distance_formula(temp_velocity);
-        }
-        return total;
     }
     
     private Double d2_distance_formula(ArrayList<Double> point){ //distance formula for 2 dimensional

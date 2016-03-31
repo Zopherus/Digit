@@ -1,12 +1,16 @@
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -214,26 +218,14 @@ public class Computation {
             String line = reader.readLine();
             while(line != null)
             {
-                String[] metrics = line.split(",");
+                String[] metrics = line.split(","); //add each modeX and modeY to total mode, add acceleration to total acceleration
                 modeTotal += Double.parseDouble(metrics[2]);
                 modeTotal += Double.parseDouble(metrics[3]);
                 accelerationTotal += Double.parseDouble(metrics[4]);
                 line = reader.readLine();
             }
             
-            reader = new BufferedReader(new FileReader("DataFiles\\" + day));
-            line = reader.readLine();
-            String[] lastDataPoint = line.split(" ");
-            line = reader.readLine();
-            while (line != null)
-            {
-                String[] data = line.split(" ");
-                
-                double[] distance = {Double.parseDouble(data[0]) - Double.parseDouble(lastDataPoint[0]),
-                    Double.parseDouble(data[1]) - Double.parseDouble(lastDataPoint[1])};
-                usageTotal += Math.sqrt(Math.pow(distance[0], 2) + Math.pow(distance[1], 2));
-                line = reader.readLine();
-            }
+            usageTotal += calculateTotalDistance("DataFiles\\" + day, "DistanceCalculations\\" + day); //add distance to total distance (usage)
         }
         
         double modeWeekAverage = modeTotal / 14.0;
@@ -243,35 +235,24 @@ public class Computation {
         String today = new File("DataMetrics").list()[0];
         BufferedReader reader = new BufferedReader(new FileReader("DataMetrics\\" + today));
         
-        modeTotal = 0;
+        modeTotal = 0; //reset variables (for later use, since we now have everything stored in averages)
         accelerationTotal = 0;
         double tremorsTotal = 0;
         usageTotal = 0;
         
-        String line = reader.readLine();
+        String line = reader.readLine(); //get x mode, y mode, acceleration and tremors from file
         while (line != null)
         {
             String[] metrics = line.split(",");
-            modeTotal += Double.parseDouble(metrics[2]);
+            modeTotal += Double.parseDouble(metrics[2]); //same as above, but for today (add mode to total, etc)
             modeTotal += Double.parseDouble(metrics[3]);
             accelerationTotal += Double.parseDouble(metrics[4]);
             tremorsTotal += Double.parseDouble(metrics[5]);
             line = reader.readLine();
         }
         
-        reader = new BufferedReader(new FileReader("DataFiles\\" + today));
-        line = reader.readLine();
-        String[] lastDataPoint = line.split(" ");
-        line = reader.readLine();
-        while (line != null)
-        {
-            String[] data = line.split(" ");
-
-            double[] distance = {Double.parseDouble(data[0]) - Double.parseDouble(lastDataPoint[0]),
-                Double.parseDouble(data[1]) - Double.parseDouble(lastDataPoint[1])};
-            usageTotal += Math.sqrt(Math.pow(distance[0], 2) + Math.pow(distance[1], 2));
-            line = reader.readLine();
-        }
+        usageTotal += calculateTotalDistance("DataFiles\\" + today, "DistanceCalculations\\" + today); //same as above, but for today
+                                                                                                       //(add distance to usage)
         
         double modeDayAverage = modeTotal / 2.0;
         double accelerationDayAverage = accelerationTotal / 1.0;
@@ -283,6 +264,61 @@ public class Computation {
         double DeteriorationIndex = (PercentChangeModalPosition + PercentChangeAcceleration + tremorsTotal) * PercentUsageChange;
         
         return "Your deterioration index is " + Double.toString(DeteriorationIndex) + ".";
+    }
+    
+    private Double calculateTotalDistance(String rawDataFilePath, String accelerationFilePath)
+    {
+        Double totalDistance = 0.0;
+        
+        if(new File(accelerationFilePath).exists()) //if acceleration data exists, just read that
+        {
+            try 
+            {
+                BufferedReader reader = new BufferedReader(new FileReader(accelerationFilePath));
+                String line = reader.readLine();
+                
+                while(line != null)
+                {
+                    totalDistance += Double.parseDouble(line); //read distance from file and add it to totalDistance
+                }
+                reader.close();
+            } 
+            catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        else //otherwise, calculate it ourselves
+        {
+            try
+            {                
+                BufferedReader reader = new BufferedReader(new FileReader(rawDataFilePath));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(accelerationFilePath));
+                String line = reader.readLine();
+                String[] lastDataPoint = line.split(",");
+                line = reader.readLine();
+                while (line != null)
+                {
+                    String[] data = line.split(",");
+
+                    Double[] distanceComponents = {Double.parseDouble(data[0]) - Double.parseDouble(lastDataPoint[0]),
+                        Double.parseDouble(data[1]) - Double.parseDouble(lastDataPoint[1])};
+                    Double distance = Math.sqrt(Math.pow(distanceComponents[0], 2) + Math.pow(distanceComponents[1], 2));
+                    
+                    writer.write(distance.toString()); //write to file
+                    writer.newLine();
+                    
+                    totalDistance += distance;
+                    line = reader.readLine();
+                }
+                reader.close();
+                writer.close();
+            }
+            catch(Exception ex)
+            {
+                System.out.println(ex.getMessage());
+            }
+        }
+        return totalDistance;
     }
     
     private double usage(ArrayList<ArrayList<Double>> data)

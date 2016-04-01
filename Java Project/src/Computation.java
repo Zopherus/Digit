@@ -266,7 +266,7 @@ public class Computation {
         double DeteriorationIndex = (PercentChangeModalPosition + PercentChangeAcceleration + tremorsTotal) * PercentUsageChange;
         DeteriorationIndex = (double)Math.round(DeteriorationIndex * 1000.0) / 1000.0;
 
-        return "Your deterioration index is " + Double.toString(DeteriorationIndex) + ".";
+        return "Your deterioration index is " + Double.toString(DeteriorationIndex);
     }
     
     private Double calculateTotalDistance(String rawDataFilePath, String accelerationFilePath)

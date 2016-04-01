@@ -266,34 +266,30 @@ public class DigitForm extends javax.swing.JFrame {
         
         if (xRangeButton.isSelected())
         {
-            generateGraph("X Range Data", "Time (Hours)", "X Range (Units)", getMetricData("xrange", formattedFileString));
+            generateGraph("Range of Motion X Data", "Time (Hours)", "Range of Motion X (%)", getMetricData("xrange", formattedFileString));
         }
         else if (yRangeButton.isSelected())
         {
-            generateGraph("Y Range Data", "Time (Hours)", "Y Range (Units)", getMetricData("yrange", formattedFileString));
+            generateGraph("Range of Motion Data Y", "Time (Hours)", "Range of Motion Y (%)", getMetricData("yrange", formattedFileString));
         }
         else if(xModeButton.isSelected())
         {
-            generateGraph("X Mode Data", "Time (Hours)", "X Mode (Units)", getMetricData("xmode", formattedFileString));
+            generateGraph("Average Position X Data", "Time (Hours)", "Average Position X (%)", getMetricData("xmode", formattedFileString));
         }
         else if (yModeButton.isSelected())
         {
-            generateGraph("Y Mode Data", "Time (Hours)", "Y Mode (Units)", getMetricData("yrange", formattedFileString));
+            generateGraph("Average Position Y Data", "Time (Hours)", "Average Position Y (%)", getMetricData("yrange", formattedFileString));
         }
         else if (smoothnessButton.isSelected())
         {
-            generateGraph("Smoothness Data", "Time (Hours)", "Smoothness (Units)", getMetricData("smoothness", formattedFileString));
+            generateGraph("Muscle Smoothness Data", "Time (Hours)", "Muscle Smoothness (%)", getMetricData("smoothness", formattedFileString));
         }
         else if (tremorsButton.isSelected())
         {
             generateGraph("Tremors Data", "Time (Hours)", "Tremors (Number of Tremors)", getMetricData("tremors", formattedFileString));
         }
-        Computation computation = new Computation();
-        try {
-            deteriorationLabel.setText(computation.deteriorationIndex());
-        } catch (IOException ex) {
-            Logger.getLogger(DigitForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
+        deteriorationLabel.setText("");
     }
 
     /**
@@ -314,10 +310,10 @@ public class DigitForm extends javax.swing.JFrame {
         yModeButton = new javax.swing.JRadioButton();
         smoothnessButton = new javax.swing.JRadioButton();
         tremorsButton = new javax.swing.JRadioButton();
+        deteroriationButton = new java.awt.Button();
         graphPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         deteriorationLabel = new javax.swing.JLabel();
-        statusLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(900, 500));
@@ -341,6 +337,7 @@ public class DigitForm extends javax.swing.JFrame {
         graphDisplayButtons.add(xRangeButton);
         xRangeButton.setSelected(true);
         xRangeButton.setText("X Range");
+        xRangeButton.setToolTipText("");
         xRangeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 xRangeButtonMouseClicked(evt);
@@ -356,7 +353,7 @@ public class DigitForm extends javax.swing.JFrame {
         });
 
         graphDisplayButtons.add(xModeButton);
-        xModeButton.setText("X Mode");
+        xModeButton.setText("X Position");
         xModeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 xModeButtonMouseClicked(evt);
@@ -364,7 +361,7 @@ public class DigitForm extends javax.swing.JFrame {
         });
 
         graphDisplayButtons.add(yModeButton);
-        yModeButton.setText("Y Mode");
+        yModeButton.setText("Y Position");
         yModeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 yModeButtonMouseClicked(evt);
@@ -387,6 +384,15 @@ public class DigitForm extends javax.swing.JFrame {
             }
         });
 
+        deteroriationButton.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
+        deteroriationButton.setLabel("Compute Deteroriation Index");
+        deteroriationButton.setName(""); // NOI18N
+        deteroriationButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                deteroriationButtonMouseClicked(evt);
+            }
+        });
+
         graphPanel.setLayout(new java.awt.BorderLayout());
 
         titleLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
@@ -394,8 +400,6 @@ public class DigitForm extends javax.swing.JFrame {
         titleLabel.setText("Digit HID Data");
 
         deteriorationLabel.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-
-        statusLabel.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -409,29 +413,28 @@ public class DigitForm extends javax.swing.JFrame {
                         .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE)
                                         .addComponent(xRangeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(yRangeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(xModeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(yModeButton)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(yModeButton)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(smoothnessButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(tremorsButton)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                                .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(deteroriationButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -444,11 +447,12 @@ public class DigitForm extends javax.swing.JFrame {
                         .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 373, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
-                            .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(deteroriationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 3, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(refresh, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(xRangeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(yRangeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -456,7 +460,8 @@ public class DigitForm extends javax.swing.JFrame {
                                     .addComponent(xModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(yModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(smoothnessButton)
-                                    .addComponent(tremorsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                    .addComponent(tremorsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(refresh, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(day_selector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -466,53 +471,65 @@ public class DigitForm extends javax.swing.JFrame {
 
     //when refresh button is clicked, take all file names from directory and put in list
     private void refreshMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refreshMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         refreshFromDataDirectory();
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_refreshMouseClicked
 
     private void day_selectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_day_selectorItemStateChanged
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_day_selectorItemStateChanged
 
     private void xRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xRangeButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_xRangeButtonMouseClicked
 
     private void yRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yRangeButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_yRangeButtonMouseClicked
 
     private void xModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xModeButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_xModeButtonMouseClicked
 
     private void yModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yModeButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_yModeButtonMouseClicked
 
     private void smoothnessButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_smoothnessButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_smoothnessButtonMouseClicked
 
     private void tremorsButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tremorsButtonMouseClicked
-        statusLabel.setText("Computing, Please Wait...");
+        try{
         computeMetricsFromRadioButtons();
-        statusLabel.setText("");
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_tremorsButtonMouseClicked
+
+    private void deteroriationButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deteroriationButtonMouseClicked
+        Computation compute = new Computation();
+        try 
+        {
+            deteriorationLabel.setText(compute.deteriorationIndex());
+        } 
+        catch (Exception ex) 
+        {
+            System.out.println(ex.getMessage());
+        }
+    }//GEN-LAST:event_deteroriationButtonMouseClicked
 
     /**
      * @param args the command line arguments
@@ -552,11 +569,11 @@ public class DigitForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.List day_selector;
     private javax.swing.JLabel deteriorationLabel;
+    private java.awt.Button deteroriationButton;
     private javax.swing.ButtonGroup graphDisplayButtons;
     private javax.swing.JPanel graphPanel;
     private java.awt.Button refresh;
     private javax.swing.JRadioButton smoothnessButton;
-    private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JRadioButton tremorsButton;
     private javax.swing.JRadioButton xModeButton;

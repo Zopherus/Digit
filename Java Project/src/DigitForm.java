@@ -7,6 +7,7 @@
     -TODO: figure out IO exception handling (and exception handling in general)*/
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,7 +44,7 @@ public class DigitForm extends javax.swing.JFrame {
     private final String fileMetricDirectory = "DataMetrics";
     private final Integer MEASURESPERSECOND = 100; //number of data points recorded every second
     //hourlyData is lists of pairs of data points (1 list per hour)
-    private final ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<>();
+    private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<>();
     
     /**
      * Creates new form DigitForm
@@ -90,6 +91,8 @@ public class DigitForm extends javax.swing.JFrame {
         String line = reader.readLine();
         int numLinesRead = 0;
         ArrayList<ArrayList<Double>> hourDataTemp = new ArrayList();
+        hourlyData.clear();
+                
         while(line != null) //iterate through each hour and add to daily list
         {
             while(numLinesRead < 3600 * MEASURESPERSECOND)
@@ -103,10 +106,9 @@ public class DigitForm extends javax.swing.JFrame {
                 line = reader.readLine();
                 if(line == null) break;
             }
-           if (line == null)
-                break;
             
-            hourlyData.add(hourDataTemp);
+            ArrayList<ArrayList<Double>> tempData = new ArrayList(hourDataTemp);
+            hourlyData.add(tempData);
             hourDataTemp.clear();
             numLinesRead = 0;
         }
@@ -199,7 +201,7 @@ public class DigitForm extends javax.swing.JFrame {
                     }
                 return null;
             }
-            else
+            else //read metrics from file
             {
                 ArrayList<Double> metricResult = new ArrayList<>();
                 BufferedReader reader = new BufferedReader(new FileReader(fileMetricDirectory + "\\" + fileName));
@@ -249,6 +251,7 @@ public class DigitForm extends javax.swing.JFrame {
         catch (Exception ex) 
         {
             System.out.println(ex.toString());
+            ex.printStackTrace();
             return null;
         }
     }
@@ -413,22 +416,22 @@ public class DigitForm extends javax.swing.JFrame {
                         .addComponent(day_selector, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(deteriorationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(xRangeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(yRangeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(xModeButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(yModeButton)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(yModeButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(smoothnessButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(tremorsButton)
@@ -444,13 +447,13 @@ public class DigitForm extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 373, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 385, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(deteriorationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(deteroriationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 3, Short.MAX_VALUE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(deteroriationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -474,13 +477,13 @@ public class DigitForm extends javax.swing.JFrame {
         try{
         refreshFromDataDirectory();
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_refreshMouseClicked
 
     private void day_selectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_day_selectorItemStateChanged
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_day_selectorItemStateChanged
 
     private void xRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xRangeButtonMouseClicked
@@ -492,19 +495,19 @@ public class DigitForm extends javax.swing.JFrame {
     private void yRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yRangeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_yRangeButtonMouseClicked
 
     private void xModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xModeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_xModeButtonMouseClicked
 
     private void yModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yModeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_yModeButtonMouseClicked
 
     private void smoothnessButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_smoothnessButtonMouseClicked
@@ -516,7 +519,7 @@ public class DigitForm extends javax.swing.JFrame {
     private void tremorsButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tremorsButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_tremorsButtonMouseClicked
 
     private void deteroriationButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deteroriationButtonMouseClicked
@@ -528,6 +531,7 @@ public class DigitForm extends javax.swing.JFrame {
         catch (Exception ex) 
         {
             System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }//GEN-LAST:event_deteroriationButtonMouseClicked
 

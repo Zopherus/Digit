@@ -476,7 +476,7 @@ public class DigitForm extends javax.swing.JFrame {
     private void refreshMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refreshMouseClicked
         try{
         refreshFromDataDirectory();
-        computeMetricsFromRadioButtons();
+        //computeMetricsFromRadioButtons();
         }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
     }//GEN-LAST:event_refreshMouseClicked
 
@@ -526,7 +526,40 @@ public class DigitForm extends javax.swing.JFrame {
         Computation compute = new Computation();
         try 
         {
-            deteriorationLabel.setText(compute.deteriorationIndex());
+            int index = day_selector.getSelectedIndex();
+            if(index == -1)
+            {
+                JOptionPane.showConfirmDialog(this, "Day must be selected", "Error", 2);
+                return;
+            }
+            
+            int[] dayNumbers = new int[8];
+            for(int i = 0; i < 8; i++)
+            {
+                dayNumbers[i] = Integer.parseInt(day_selector.getItem(index - i).split("/")[2]); //gets the day number associated with the item
+            }
+            boolean isValid = true;
+            for(int j = 1; j > 8; j++)
+            {
+                int difference = dayNumbers[j] - dayNumbers[j-1];
+                if(difference > 30) //if interval includes beginning of month, ignore large difference (difference of 30)
+                {
+                    int[] monthNumbers = new int[2];
+                    monthNumbers[0] = Integer.parseInt(day_selector.getItem(index - j).split("/")[1]);
+                    monthNumbers[1] = Integer.parseInt(day_selector.getItem(index - j - 1).split("/")[1]);
+                    if(monthNumbers[0] - monthNumbers[1] != 1) { isValid = false; } //difference between montsh is more than 1
+                    
+                }
+                else if(difference != 1) { isValid = false; } //difference between days is more than 1
+            }
+            if(isValid) //this does not take into account month difference due to change in month and day difference
+            {           //due to abnormal months (like February, with only 29 days)
+            deteriorationLabel.setText(compute.deteriorationIndex(index));
+            }
+            else
+            {
+                JOptionPane.showConfirmDialog(this, "Days must be consecutive", "Error", 2);
+            }
         } 
         catch (Exception ex) 
         {

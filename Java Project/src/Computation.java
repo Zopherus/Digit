@@ -205,7 +205,7 @@ public class Computation {
         return average_mode / num_modes;
     }
     
-    public String deteriorationIndex() throws FileNotFoundException, IOException
+    public String deteriorationIndex(int startIndex) throws FileNotFoundException, IOException
     {
         if (new File("DataMetrics").list().length < 8 && new File("DataFiles").list().length < 8)
             return "Deterioration index will only work after the first week.";
@@ -213,9 +213,9 @@ public class Computation {
         double modeTotal = 0;
         double accelerationTotal = 0;
         double usageTotal = 0;
-        for (int counter = 1; counter < 8; counter++)
+        for (int counter = 7; counter > 0; counter--)
         {
-            String day = new File("DataMetrics").list()[counter];
+            String day = new File("DataMetrics").list()[startIndex - counter];
             BufferedReader reader = new BufferedReader(new FileReader("DataMetrics\\" + day));
             String line = reader.readLine();
             while(line != null)
@@ -234,7 +234,7 @@ public class Computation {
         double accelerationWeekAverage = accelerationTotal / 7.0;
         double usageWeekAverage = usageTotal / 7.0;
         
-        String today = new File("DataMetrics").list()[0];
+        String today = new File("DataMetrics").list()[startIndex];
         BufferedReader reader = new BufferedReader(new FileReader("DataMetrics\\" + today));
         
         modeTotal = 0; //reset variables (for later use, since we now have everything stored in averages)

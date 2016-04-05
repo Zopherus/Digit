@@ -7,7 +7,6 @@
     -TODO: figure out IO exception handling (and exception handling in general)*/
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,36 +14,27 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
-/**
- *
- * @author Eric and Simon
- */
+// @author Eric Zhu and Simon Dushatel
 
 
-
-// TODO: MAKE RESIZABLE FALSE FOR FORM
 public class DigitForm extends javax.swing.JFrame {
 
+    
+    private final int screenHeight = 550;
+    private final int screenWidth = 900;
     //class variables
     private final String fileInputDirectory = "DataFiles";
     private final String fileMetricDirectory = "DataMetrics";
     private final Integer MEASURESPERSECOND = 100; //number of data points recorded every second
     //hourlyData is lists of pairs of data points (1 list per hour)
-    private ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<>();
+    private final ArrayList<ArrayList<ArrayList<Double>>> hourlyData = new ArrayList<>();
     
     /**
      * Creates new form DigitForm
@@ -56,9 +46,8 @@ public class DigitForm extends javax.swing.JFrame {
     
     private void Initialize()
     {
-        setSize(900, 550);
+        setSize(screenWidth, screenHeight);
         setLocationRelativeTo(null);
-        
         refreshFromDataDirectory();
     }
     
@@ -120,9 +109,8 @@ public class DigitForm extends javax.swing.JFrame {
         day_selector.removeAll(); //reset list
         File directory = new File(fileInputDirectory);
         File[] files = directory.listFiles();
-        for(int i = 0; i < files.length; i++)
-        {
-            String fileName = files[i].getName().replace(".txt", ""); //read file name and remove .txt
+        for (File file : files) {
+            String fileName = file.getName().replace(".txt", ""); //read file name and remove .txt
             String[] fileNameSplit = fileName.split("_"); 
             fileName = fileNameSplit[1] + "/" + fileNameSplit[2] + "/" + fileNameSplit[0]; //reverse the order (should now be dd/mm/yy);
             day_selector.add(fileName); //add each file name to list
@@ -248,10 +236,9 @@ public class DigitForm extends javax.swing.JFrame {
                 return metricResult;       
             }
         }
-        catch (Exception ex) 
+        catch (IOException | NumberFormatException ex) 
         {
             System.out.println(ex.toString());
-            ex.printStackTrace();
             return null;
         }
     }
@@ -477,13 +464,13 @@ public class DigitForm extends javax.swing.JFrame {
         try{
         refreshFromDataDirectory();
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_refreshMouseClicked
 
     private void day_selectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_day_selectorItemStateChanged
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_day_selectorItemStateChanged
 
     private void xRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xRangeButtonMouseClicked
@@ -495,19 +482,19 @@ public class DigitForm extends javax.swing.JFrame {
     private void yRangeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yRangeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_yRangeButtonMouseClicked
 
     private void xModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_xModeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_xModeButtonMouseClicked
 
     private void yModeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_yModeButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_yModeButtonMouseClicked
 
     private void smoothnessButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_smoothnessButtonMouseClicked
@@ -519,7 +506,7 @@ public class DigitForm extends javax.swing.JFrame {
     private void tremorsButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tremorsButtonMouseClicked
         try{
         computeMetricsFromRadioButtons();
-        }catch(Exception ex) { System.out.println(ex.getMessage()); ex.printStackTrace(); }
+        }catch(Exception ex) { System.out.println(ex.getMessage()); }
     }//GEN-LAST:event_tremorsButtonMouseClicked
 
     private void deteroriationButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deteroriationButtonMouseClicked
@@ -528,10 +515,9 @@ public class DigitForm extends javax.swing.JFrame {
         {
             deteriorationLabel.setText(compute.deteriorationIndex());
         } 
-        catch (Exception ex) 
+        catch (IOException ex) 
         {
             System.out.println(ex.getMessage());
-            ex.printStackTrace();
         }
     }//GEN-LAST:event_deteroriationButtonMouseClicked
 
@@ -564,6 +550,7 @@ public class DigitForm extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new DigitForm().setVisible(true);
             }

@@ -1,0 +1,9 @@
+Fix bug where radio button won't change graph
+
+Add buttons to change length of time
+
+Standarize error throwing (Popup or no?)
+
+Make deterioration index run faster
+
+Maybe figure out absolute units, instead of having everything relative

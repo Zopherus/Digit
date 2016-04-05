@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,16 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author 1012746
- */
+//@author Eric Zhu and Simon Dushatel
 public class Computation {
     
     public ArrayList<Double> find_range_of_motion(ArrayList<ArrayList<Double>> data){ //calculate the range for x and y (seperate)
@@ -62,7 +52,8 @@ public class Computation {
     {
         //average acceleration between points
         ArrayList<Double> velocity = new ArrayList<>();
-        for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
+        for (int i = 0; i < data.size() - 1; i++)
+        { //calculate velocity (difference between data points) and add to velocity
             ArrayList<Double> temp_velocity = new ArrayList<>();
             temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
             temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
@@ -70,8 +61,9 @@ public class Computation {
         }
             
         ArrayList<Double> acceleration_list = new ArrayList<>();
-        for (int i = 0; i < velocity.size() - 1; i++){ //calculate acceleraion (difference between velocity data points) and add to acceleration (omit any points with 0 velocity)
-            if((velocity.get(i) != 0.0) & (velocity.get(i+1) != 0.0)){
+        for (int i = 0; i < velocity.size() - 1; i++)
+        { //calculate acceleraion (difference between velocity data points) and add to acceleration (omit any points with 0 velocity)
+            if((velocity.get(i) != 0.0) && (velocity.get(i+1) != 0.0)){
                 acceleration_list.add(Math.abs(velocity.get(i+1) - velocity.get(i)));
             }
         }
@@ -82,7 +74,8 @@ public class Computation {
     
      public int find_tremors(ArrayList<ArrayList<Double>> data){ //count number of tremors (small amplitude patterns over ~6-16 data points (8-12 Hz))
        ArrayList<Double> velocity = new ArrayList<>();
-        for (int i = 0; i < data.size() - 1; i++){ //calculate velocity (difference between data points) and add to velocity
+        for (int i = 0; i < data.size() - 1; i++)
+        { //calculate velocity (difference between data points) and add to velocity
             ArrayList<Double> temp_velocity = new ArrayList<>();
             temp_velocity.add(data.get(i + 1).get(0) - data.get(i).get(0));
             temp_velocity.add(data.get(i + 1).get(1) - data.get(i).get(1));
@@ -90,8 +83,9 @@ public class Computation {
         }
             
         ArrayList<Double> acceleration = new ArrayList<>();
-        for (int i = 0; i < velocity.size() - 1; i++){ //calculate acceleraion (difference between velocity data points) and add to acceleration
-            acceleration.add(Math.abs(velocity.get(i+1) - velocity.get(i)));
+        for (int i = 0; i < velocity.size() - 1; i++)
+        { //calculate acceleraion (difference between velocity data points) and add to acceleration
+            acceleration.add(velocity.get(i+1) - velocity.get(i));
         }
         
         int tremorCount = 0;
@@ -155,8 +149,9 @@ public class Computation {
      
     public Double mean(ArrayList<Double> list){ //calcualte mean
         Double mean = 0.0;
-        for(int i = 0; i < list.size(); i++){
-            mean = mean + list.get(i);
+        for (Double list1 : list) 
+        {
+            mean = mean + list1;
         }
         mean = mean / (double)list.size();
         
@@ -164,10 +159,12 @@ public class Computation {
     }
     
     //very quick implementation of finding mode (improve if time allows)
-    private Double mode(ArrayList<Double> list){ //returns mode (or if multiple, modal average)
+    private Double mode(ArrayList<Double> list)
+    { //returns mode (or if multiple, modal average)
         ArrayList<Double> modes = new ArrayList<>();
         ArrayList<Integer> frequency = new ArrayList<>();
-        for(int i = 0; i < list.size(); i++){ //add elements to modes/frequency
+        for(int i = 0; i < list.size(); i++)
+        { //add elements to modes/frequency
             boolean in_list = false;
             for(int j = 0; j < modes.size(); j++)
             {
@@ -188,17 +185,17 @@ public class Computation {
         int num_modes = 0;
         
         Double largest_mode = 0.0;
-        for(int k = 0; k < modes.size(); k++)
+        for (Double mode : modes) 
         {
-            if(modes.get(k) > largest_mode) //new largest found (replace previous)
+            if (mode > largest_mode) 
             {
-                largest_mode = modes.get(k);
+                largest_mode = mode;
                 average_mode = largest_mode;
                 num_modes = 1;
             }
-            if(Objects.equals(modes.get(k), largest_mode))
+            if (Objects.equals(mode, largest_mode)) 
             {
-                average_mode = modes.get(k);
+                average_mode = mode;
                 num_modes = 1;
             }
         }
@@ -287,7 +284,7 @@ public class Computation {
                 }
                 reader.close();
             } 
-            catch (Exception ex)
+            catch (IOException | NumberFormatException ex)
             {
                 System.out.println(ex.getMessage());
             }
@@ -318,7 +315,7 @@ public class Computation {
                 reader.close();
                 writer.close();
             }
-            catch(Exception ex)
+            catch(IOException | NumberFormatException ex)
             {
                 System.out.println(ex.getMessage());
             }
